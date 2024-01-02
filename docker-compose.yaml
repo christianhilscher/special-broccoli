@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  api-server:
+    build: ./api_server
+    ports:
+      - "5000:5000"
+
+  data-processor:
+    build: ./data_processor
