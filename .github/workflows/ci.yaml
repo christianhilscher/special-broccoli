@@ -27,7 +27,7 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
-          context: ./${{ matrix.subfolder }}
-          file: ./${{ matrix.subfolder }}/Dockerfile
+          context: ./${{ matrix.image }}
+          file: ./${{ matrix.image }}/Dockerfile
           push: true
-          tags: christianhilscher/${{ matrix.subfolder }}:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
