@@ -1,7 +1,7 @@
 name: Drift Monitor
 
 on:
-  push
+  workflow-dispatch
 
 jobs:
   check-file:
