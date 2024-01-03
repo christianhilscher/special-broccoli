@@ -30,4 +30,4 @@ jobs:
           context: ./${{ matrix.subfolder }}
           file: ./${{ matrix.subfolder }}/Dockerfile
           push: true
-          tags: $christianhilscher/${{ matrix.subfolder }}:latest
+          tags: christianhilscher/${{ matrix.subfolder }}:latest
