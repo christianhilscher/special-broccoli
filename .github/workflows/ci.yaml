@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: [api_server, data_processor]
+        image: [api_server, data_processor, dirft_monitor]
 
     steps:
 
