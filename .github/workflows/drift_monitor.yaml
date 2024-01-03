@@ -17,5 +17,5 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_server:latest
             docker run --rm -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
