@@ -65,12 +65,17 @@ jobs:
     - name: Move and Rename Model File
       run: mv ${{ github.workspace }}/artifacts/model-${{ needs.train-and-upload-model.outputs.date }}.pkl ${{ github.workspace }}/models/model.pkl
 
+    - name: List files in models directory
+      run: ls -l models/
+
+
     - name: Auto-commit model file
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Add new model based on date ${{ needs.train-and-upload-model.outputs.date }}
         branch: model-update-${{ needs.train-and-upload-model.outputs.date }}
-        file_pattern: models/model-${{ needs.train-and-upload-model.outputs.date }}.pkl
+        file_pattern: models/model.pkl
+
 
 
     - name: Create Pull Request
