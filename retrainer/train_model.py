@@ -1,4 +1,5 @@
 import os
+import time
 
 def train_model(identifier):
     print(f"Model trained successfully with identifier: {identifier}")
@@ -9,3 +10,4 @@ def train_model(identifier):
 if __name__ == "__main__":
     identifier = os.getenv("IDENTIFIER", "default-identifier")
     train_model(identifier)
+    time.sleep(5)
