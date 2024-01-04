@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  push
+  workflow_dispatch:
 
 jobs:
   docker:
@@ -30,4 +30,7 @@ jobs:
           context: ./${{ matrix.image }}
           file: ./${{ matrix.image }}/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
