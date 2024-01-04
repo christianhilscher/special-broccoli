@@ -70,7 +70,7 @@ jobs:
 
 
     - name: Auto-commit model file
-      uses: stefanzweifel/git-auto-commit-action@v4
+      uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: Add new model based on date ${{ needs.train-and-upload-model.outputs.date }}
         branch: model-update-${{ needs.train-and-upload-model.outputs.date }}
