@@ -1,0 +1,56 @@
+name: Model Re-Training
+
+on:
+  workflow_dispatch:
+
+jobs:
+  train-and-upload-model:
+    runs-on: ubuntu-latest
+    outputs:
+      date: ${{ steps.vars.outputs.date }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Generate date identifier
+      id: vars
+      run: echo "::set-output name=date::$(date +%Y%m%d%H%M%S)"
+
+    - name: SSH to EC2 and Run Docker
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          docker run --name model-training-container -e IDENTIFIER=${{ steps.vars.outputs.date }} my-image:latest
+          docker cp model-training-container:/path/to/model-${{ steps.vars.outputs.date }}.pkl /tmp/model-${{ steps.vars.outputs.date }}.pkl
+
+    - name: Upload model as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: model-${{ steps.vars.outputs.date }}
+        path: /tmp/model-${{ steps.vars.outputs.date }}.pkl
+
+  process-model:
+    needs: train-and-upload-model
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: model-${{ needs.train-and-upload-model.outputs.date }}
+
+    - name: Auto-commit model file
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Add new model based on date ${{ needs.train-and-upload-model.outputs.date }}
+        branch: model-update-${{ needs.train-and-upload-model.outputs.date }}
+        file_pattern: model-${{ needs.train-and-upload-model.outputs.date }}.pkl
+
+    - name: Create Pull Request
+      uses: repo-sync/pull-request@v2
+      with
