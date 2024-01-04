@@ -1,14 +1,14 @@
 name: CI
 
 on:
-  push
+  workflow_dispatch:
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: [retrainer]
+        image: [api_server, drift_monitor, retrainer]
 
     steps:
 
