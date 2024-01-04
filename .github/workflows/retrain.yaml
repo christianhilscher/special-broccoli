@@ -51,7 +51,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GIT_TOKEN }}
 
     - name: Create Artifact Directory
       run: mkdir -p ${{ github.workspace }}/artifacts
@@ -76,7 +78,6 @@ jobs:
         branch: model-update-${{ needs.train-and-upload-model.outputs.date }}
         file_pattern: models/model.pkl
         create_branch: true
-        token: ${{ secrets.DEMO_TOKEN }}
 
     - name: Create Pull Request
       uses: repo-sync/pull-request@v2
