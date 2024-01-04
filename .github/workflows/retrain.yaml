@@ -70,7 +70,7 @@ jobs:
       with:
         commit_message: Add new model based on date ${{ needs.train-and-upload-model.outputs.date }}
         branch: model-update-${{ needs.train-and-upload-model.outputs.date }}
-        file_pattern: artifacts/model-${{ needs.train-and-upload-model.outputs.date }}.pkl
+        file_pattern: models/model-${{ needs.train-and-upload-model.outputs.date }}.pkl
 
 
     - name: Create Pull Request
