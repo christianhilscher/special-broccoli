@@ -26,20 +26,23 @@ jobs:
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/retrainer:latest
           docker run -e IDENTIFIER=${{ steps.vars.outputs.date }} -v /home/ec2-user/models:/models ${{ secrets.DOCKERHUB_USERNAME }}/retrainer:latest
 
-    - name: Copy model from EC2 to GitHub Runner
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "/home/ec2-user/models/model-${{ steps.vars.outputs.date }}.pkl"
-        target: "${{ github.workspace }}"
+    - name: Install SSH
+      run: sudo apt-get update && sudo apt-get install -y ssh
 
-    - name: Upload model as artifact
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+    - name: Copy file from EC2
+      run: scp -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ec2-user/models/model-${{ steps.vars.outputs.date }}.pkl $GITHUB_WORKSPACE/
+
+    - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
         name: model-${{ steps.vars.outputs.date }}
-        path: ${{ github.workspace }}/model-${{ steps.vars.outputs.date }}.pkl
+        path: ${{ github.workspace }}
 
 
   process-model:
