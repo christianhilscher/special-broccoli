@@ -62,6 +62,8 @@ jobs:
         path: ${{ github.workspace }}/artifacts/
         name: model-${{ needs.train-and-upload-model.outputs.date }}
 
+    - name: Move and Rename Model File
+      run: mv ${{ github.workspace }}/artifacts/model-${{ needs.train-and-upload-model.outputs.date }}.pkl ${{ github.workspace }}/models/model.pkl
 
     - name: Auto-commit model file
       uses: stefanzweifel/git-auto-commit-action@v4
