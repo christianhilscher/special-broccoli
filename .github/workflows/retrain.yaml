@@ -1,4 +1,4 @@
-name: Model Re-Training
+name: Model Retraining
 
 on:
   workflow_dispatch:
@@ -53,4 +53,10 @@ jobs:
 
     - name: Create Pull Request
       uses: repo-sync/pull-request@v2
-      with
+      with:
+        github_token: ${{ secrets.GIT_TOKEN }}
+        pr_title: "New Model Update: ${{ needs.train-and-upload-model.outputs.date }}"
+        pr_body: "This PR includes the newly trained model."
+        destination_branch: "main"
+        source_branch: "model-update-${{ needs.train-and-upload-model.outputs.date }}"
+
