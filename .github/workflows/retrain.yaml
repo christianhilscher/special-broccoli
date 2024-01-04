@@ -75,8 +75,7 @@ jobs:
         commit_message: Add new model based on date ${{ needs.train-and-upload-model.outputs.date }}
         branch: model-update-${{ needs.train-and-upload-model.outputs.date }}
         file_pattern: models/model.pkl
-
-
+        create_branch: true
 
     - name: Create Pull Request
       uses: repo-sync/pull-request@v2
