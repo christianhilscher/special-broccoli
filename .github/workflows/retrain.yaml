@@ -23,7 +23,8 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          docker run --name model-training-container -e IDENTIFIER=${{ steps.vars.outputs.date }} my-image:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/retrainer:latest
+          docker run --name model-training-container -e IDENTIFIER=${{ steps.vars.outputs.date }} ${{ secrets.DOCKERHUB_USERNAME }}/retrainer:latest
           docker cp model-training-container:/path/to/model-${{ steps.vars.outputs.date }}.pkl /tmp/model-${{ steps.vars.outputs.date }}.pkl
 
     - name: Upload model as artifact
