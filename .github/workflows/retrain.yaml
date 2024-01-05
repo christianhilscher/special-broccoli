@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       file_id: ${{ env.file_id }}
+      issue_number: ${{ env.issue_number }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -91,7 +92,7 @@ jobs:
       run: |
         gh pr create \
           --title "New Model Update: ${{ needs.train-and-upload-model.outputs.file_id }}" \
-          --body "This PR includes the newly trained model. Linked Issue: #${{ env.issue_number }}" \
+          --body "This PR includes the newly trained model. Linked Issue: #${{ needs.train-and-upload-model.outputs.issue_number }}" \
           --base main \
           --head model-update-${{ needs.train-and-upload-model.outputs.file_id }}
       env:
