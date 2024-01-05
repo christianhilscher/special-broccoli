@@ -3,6 +3,10 @@ name: Model Retraining
 on:
   workflow_dispatch:
 
+# on:
+#   issues:
+#     types: [opened, reopened]
+
 jobs:
   train-and-upload-model:
     runs-on: ubuntu-latest
@@ -11,6 +15,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Get Issue Number
+      id: issue-info
+      run: echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_ENV
 
     - name: Generate date identifier
       id: vars
@@ -80,11 +88,12 @@ jobs:
         create_branch: true
 
     - name: Create Pull Request
-      uses: repo-sync/pull-request@v2
-      with:
-        github_token: ${{ secrets.GIT_TOKEN }}
-        pr_title: "New Model Update: ${{ needs.train-and-upload-model.outputs.date }}"
-        pr_body: "This PR includes the newly trained model."
-        destination_branch: "main"
-        source_branch: "model-update-${{ needs.train-and-upload-model.outputs.date }}"
+      run: |
+        gh pr create \
+          --title "New Model Update: ${{ needs.train-and-upload-model.outputs.date }}" \
+          --body "This PR includes the newly trained model. Linked Issue: #${{ env.issue_number }}" \
+          --base main \
+          --head model-update-${{ needs.train-and-upload-model.outputs.date }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
 

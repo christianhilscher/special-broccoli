@@ -20,20 +20,9 @@ jobs:
           echo "Running tests..."
           # Example: ./run-tests.sh
 
-      - name: Extract Issue Number
-        id: extract-issue
-        run: |
-          echo "$(echo ${{ github.head_ref }} | sed -n 's/.*_\(.*\)_.*/\1/p')"
-          echo "ISSUE_NUMBER=1" >> $GITHUB_ENV
-
-      - name: Close Issue
-        run: gh issue close --comment "Auto-closing issue" ${{ env.ISSUE_NUMBER }}
-        env:
-          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
-
       - name: Merge PR into Master
         if: success()
         run: |
           gh pr merge ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --admin
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
