@@ -23,6 +23,6 @@ jobs:
       - name: Merge PR into Master
         if: success()
         run: |
-          gh pr merge ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --admin
+          gh pr merge ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --admin --rebase
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
