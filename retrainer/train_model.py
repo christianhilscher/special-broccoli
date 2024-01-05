@@ -10,4 +10,4 @@ def train_model(identifier):
 if __name__ == "__main__":
     identifier = os.getenv("IDENTIFIER", "default-identifier")
     train_model(identifier)
-    time.sleep(5)
+    # time.sleep(5)
