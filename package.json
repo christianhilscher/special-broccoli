@@ -1,7 +1,19 @@
 {
-    "name": "my-package",
+    "name": "your-project-name",
+    "version": "0.0.0",
+    "description": "Your project description",
+    "main": "index.js",
     "private": true,
     "release": {
-      "branches": ["main"]
-    }
+        "branches": ["main"]
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/christianhilscher/special-broccoli.git"
+    },
+    "bugs": {
+      "url": "https://github.com/christianhilscher/special-broccoli/issues"
+    },
+    "homepage": "https://github.com/christianhilscher/special-broccoli#readme"
   }
+  
