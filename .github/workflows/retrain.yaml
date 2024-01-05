@@ -2,10 +2,13 @@ name: Model Retraining
 
 on:
   workflow_dispatch:
-
-# on:
-#   issues:
-#     types: [opened, reopened]
+    inputs:
+      issue_number:
+        description: 'Issue Number (optional)'
+        required: false
+        default: "999"
+  issues:
+    types: [opened, reopened]
 
 jobs:
   train-and-upload-model:
