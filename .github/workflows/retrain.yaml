@@ -23,7 +23,7 @@ jobs:
 
     - name: Generate date identifier
       id: vars
-      run: echo "file_id::$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+      run: echo "file_id=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
     - name: SSH to EC2 and Run Docker
       uses: appleboy/ssh-action@master
