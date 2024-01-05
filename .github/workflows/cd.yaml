@@ -33,11 +33,16 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/api_server:cache
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/api_server:cache
       
-      - name: Semantic Release
-        id: semantic
-        uses: cycjimmy/semantic-release-action@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          branch: master
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Semantic Release
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
       
@@ -47,4 +52,4 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           SSH_HOST: ${{ secrets.EC2_HOST }}
           CONTAINER_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/api_server
-          VERSION: ${{ steps.semantic.outputs.new-release-version }}
+          VERSION: ${{ github.sha }}
