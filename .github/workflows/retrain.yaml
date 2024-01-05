@@ -2,16 +2,20 @@ name: Model Retraining
 
 on:
   workflow_dispatch:
-
-# on:
-#   issues:
-#     types: [opened, reopened]
+    inputs:
+      issue_number:
+        description: 'Issue Number (optional)'
+        required: false
+        default: "999"
+  issues:
+    types: [opened, reopened]
 
 jobs:
   train-and-upload-model:
     runs-on: ubuntu-latest
     outputs:
-      file_id: ${{ env.file_id }}
+      file_id: ${{ steps.set-outputs.outputs.file_id }}
+      issue_number: ${{ steps.set-outputs.outputs.issue_number }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -22,7 +26,14 @@ jobs:
 
     - name: Generate date identifier
       id: vars
-      run: echo "file_id::$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+      run: echo "file_id=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+    - name: Set Outputs
+      id: set-outputs
+      run: |
+        echo "file_id=$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+        echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+
 
     - name: SSH to EC2 and Run Docker
       uses: appleboy/ssh-action@master
@@ -91,7 +102,7 @@ jobs:
       run: |
         gh pr create \
           --title "New Model Update: ${{ needs.train-and-upload-model.outputs.file_id }}" \
-          --body "This PR includes the newly trained model. Linked Issue: #${{ env.issue_number }}" \
+          --body "This PR includes the newly trained model. Linked Issue: #${{ needs.train-and-upload-model.outputs.issue_number }}" \
           --base main \
           --head model-update-${{ needs.train-and-upload-model.outputs.file_id }}
       env:
