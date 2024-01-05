@@ -7,7 +7,7 @@ app = Flask(__name__)
 def send_data():
     data = request.json
     # Send data to the data-processor container
-    requests.post('http://data-processor:5001/process', json=data)
+    # requests.post('http://data-processor:5001/process', json=data)
     return jsonify({"message": "Data sent to processor"})
 
 if __name__ == '__main__':
