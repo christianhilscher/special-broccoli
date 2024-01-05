@@ -1,0 +1,23 @@
+name: Rollback Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to rollback to'
+        required: true
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Rollback to specified version
+        run: bash deploy.sh
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          CONTAINER_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/api_server
+          VERSION: ${{ github.event.inputs.version }}
