@@ -14,8 +14,8 @@ jobs:
   train-and-upload-model:
     runs-on: ubuntu-latest
     outputs:
-      file_id: ${{ env.file_id }}
-      issue_number: ${{ env.issue_number }}
+      file_id: ${{ steps.set-outputs.outputs.file_id }}
+      issue_number: ${{ steps.set-outputs.outputs.issue_number }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -27,6 +27,13 @@ jobs:
     - name: Generate date identifier
       id: vars
       run: echo "file_id=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+    - name: Set Outputs
+      id: set-outputs
+      run: |
+        echo "file_id=$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+        echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+
 
     - name: SSH to EC2 and Run Docker
       uses: appleboy/ssh-action@master
