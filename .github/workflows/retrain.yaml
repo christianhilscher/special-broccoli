@@ -3,18 +3,26 @@ name: Model Retraining
 on:
   workflow_dispatch:
 
+# on:
+#   issues:
+#     types: [opened, reopened]
+
 jobs:
   train-and-upload-model:
     runs-on: ubuntu-latest
     outputs:
-      date: ${{ steps.vars.outputs.date }}
+      file_id: ${{ env.file_id }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Get Issue Number
+      id: issue-info
+      run: echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_ENV
+
     - name: Generate date identifier
       id: vars
-      run: echo "::set-output name=date::$(date +%Y%m%d%H%M%S)"
+      run: echo "file_id::$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
     - name: SSH to EC2 and Run Docker
       uses: appleboy/ssh-action@master
@@ -24,7 +32,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/retrainer:latest
-          docker run -e IDENTIFIER=${{ steps.vars.outputs.date }} -v /home/ec2-user/models:/models ${{ secrets.DOCKERHUB_USERNAME }}/retrainer:latest
+          docker run -e IDENTIFIER=${{ env.file_id }} -v /home/ec2-user/models:/models ${{ secrets.DOCKERHUB_USERNAME }}/retrainer:latest
 
     - name: Install SSH
       run: sudo apt-get update && sudo apt-get install -y ssh
@@ -37,12 +45,12 @@ jobs:
 
     - name: Copy file from EC2
       run: |
-        scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ec2-user/models/model-${{ steps.vars.outputs.date }}.pkl $GITHUB_WORKSPACE/
+        scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ec2-user/models/model-${{ env.file_id }}.pkl $GITHUB_WORKSPACE/
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: model-${{ steps.vars.outputs.date }}
+        name: model-${{ env.file_id }}
         path: ${{ github.workspace }}
 
 
@@ -62,10 +70,10 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: ${{ github.workspace }}/artifacts/
-        name: model-${{ needs.train-and-upload-model.outputs.date }}
+        name: model-${{ needs.train-and-upload-model.outputs.file_id }}
 
     - name: Move and Rename Model File
-      run: mv ${{ github.workspace }}/artifacts/model-${{ needs.train-and-upload-model.outputs.date }}.pkl ${{ github.workspace }}/models/model.pkl
+      run: mv ${{ github.workspace }}/artifacts/model-${{ needs.train-and-upload-model.outputs.file_id }}.pkl ${{ github.workspace }}/models/model.pkl
 
     - name: List files in models directory
       run: ls -l models/
@@ -74,17 +82,18 @@ jobs:
     - name: Auto-commit model file
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: Add new model based on date ${{ needs.train-and-upload-model.outputs.date }}
-        branch: model-update-${{ needs.train-and-upload-model.outputs.date }}
+        commit_message: Add new model based on date ${{ needs.train-and-upload-model.outputs.file_id }}
+        branch: model-update-${{ needs.train-and-upload-model.outputs.file_id }}
         file_pattern: models/model.pkl
         create_branch: true
 
     - name: Create Pull Request
-      uses: repo-sync/pull-request@v2
-      with:
-        github_token: ${{ secrets.GIT_TOKEN }}
-        pr_title: "New Model Update: ${{ needs.train-and-upload-model.outputs.date }}"
-        pr_body: "This PR includes the newly trained model."
-        destination_branch: "main"
-        source_branch: "model-update-${{ needs.train-and-upload-model.outputs.date }}"
+      run: |
+        gh pr create \
+          --title "New Model Update: ${{ needs.train-and-upload-model.outputs.file_id }}" \
+          --body "This PR includes the newly trained model. Linked Issue: #${{ env.issue_number }}" \
+          --base main \
+          --head model-update-${{ needs.train-and-upload-model.outputs.file_id }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
 
