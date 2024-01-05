@@ -23,7 +23,8 @@ jobs:
       - name: Extract Issue Number
         id: extract-issue
         run: |
-          echo "ISSUE_NUMBER=$(echo ${{ github.head_ref }} | sed -n 's/.*_\(.*\)_.*/\1/p')" >> $GITHUB_ENV
+          echo "$(echo ${{ github.head_ref }} | sed -n 's/.*_\(.*\)_.*/\1/p')"
+          echo "ISSUE_NUMBER=1" >> $GITHUB_ENV
 
       - name: Close Issue
         run: gh issue close --comment "Auto-closing issue" ${{ env.ISSUE_NUMBER }}
