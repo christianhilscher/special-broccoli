@@ -1,0 +1,7 @@
+{
+    "name": "my-package",
+    "private": true,
+    "release": {
+      "branches": ["main"]
+    }
+  }
