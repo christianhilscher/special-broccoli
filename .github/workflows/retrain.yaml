@@ -10,7 +10,7 @@ jobs:
       date: ${{ steps.vars.outputs.date }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Generate date identifier
       id: vars
@@ -40,7 +40,7 @@ jobs:
         scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ec2-user/models/model-${{ steps.vars.outputs.date }}.pkl $GITHUB_WORKSPACE/
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: model-${{ steps.vars.outputs.date }}
         path: ${{ github.workspace }}
@@ -59,7 +59,7 @@ jobs:
       run: mkdir -p ${{ github.workspace }}/artifacts
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         path: ${{ github.workspace }}/artifacts/
         name: model-${{ needs.train-and-upload-model.outputs.date }}
