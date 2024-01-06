@@ -31,7 +31,7 @@ jobs:
 
 
   train-and-upload-model:
-    # if: needs.check-issue-title.outputs.should_run == 'true'
+    if: contains(github.event.issue.title, 'Drift-Monitor')
     runs-on: ubuntu-latest
     outputs:
       file_id: ${{ steps.set-outputs.outputs.file_id }}
@@ -83,7 +83,7 @@ jobs:
 
   create-pr:
     needs: train-and-upload-model
-    # if: needs.check-issue-title.outputs.should_run == 'true'
+    if: contains(github.event.issue.title, 'Drift-Monitor')
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
