@@ -9,6 +9,6 @@ RUN pip install --no-cache-dir poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install
 
-COPY ./retrainer/ /app
+COPY /retrain/train.py /app
 
 CMD ["python", "train.py"]

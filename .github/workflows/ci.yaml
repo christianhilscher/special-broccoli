@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: [api_server, drift_monitor, retrainer]
+        image: [api_server, drift_monitor, retrain]
 
     steps:
 
@@ -27,10 +27,11 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
-          context: ./${{ matrix.image }}
-          file: ./${{ matrix.image }}/Dockerfile
+          context: .
+          file: ./docker/${{ matrix.image }}.Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache

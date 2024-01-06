@@ -25,8 +25,8 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
-          context: ./api_server
-          file: ./api_server/Dockerfile
+          context: .
+          file: ./docker/api_server.Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}

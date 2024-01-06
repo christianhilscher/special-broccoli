@@ -81,5 +81,5 @@ def run(data_path:str, model_path:str):
 
 if __name__ == "__main__":
     data_path = "/data/datatraining.txt"
-    model_path = "//models"
+    model_path = "/models"
     run(data_path, model_path)
