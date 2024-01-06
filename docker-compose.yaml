@@ -1,10 +1,19 @@
 version: '3'
 
 services:
-  api-server:
-    build: ./api_server
-    ports:
-      - "80:5000"
+  # api-server:
+  #   build: ./api_server
+  #   ports:
+  #     - "80:5000"
 
-  data-processor:
-    build: ./data_processor
+  retrainer:
+    build:
+      context: .
+      dockerfile: retrainer/Dockerfile
+    image: christianhilscher/retrainer:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/Downloads/models:/models 
+      - ~/Downloads/data:/data
+
