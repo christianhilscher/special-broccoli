@@ -11,7 +11,22 @@ on:
     types: [opened, reopened]
 
 jobs:
+  check-issue-title:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check_title.outputs.should_run }}
+    steps:
+      - id: check_title
+        name: Check Issue Title for Pattern
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [[ "${{ github.event.issue.title }}" == "Drift-Monitor:"* ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> GITHUB_OUTPUT
+          fi
+
   train-and-upload-model:
+    if: needs.check-issue-title.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     outputs:
       file_id: ${{ steps.set-outputs.outputs.file_id }}
@@ -20,17 +35,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Get Issue Number
-      id: issue-info
-      run: echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_ENV
-
-    - name: Generate date identifier
-      id: vars
-      run: echo "file_id=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-
     - name: Set Outputs
       id: set-outputs
       run: |
+        echo "file_id=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
         echo "file_id=$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
         echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
 
@@ -67,6 +75,7 @@ jobs:
 
   process-model:
     needs: train-and-upload-model
+    if: needs.check-issue-title.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -86,10 +95,6 @@ jobs:
     - name: Move and Rename Model File
       run: mv ${{ github.workspace }}/artifacts/model-${{ needs.train-and-upload-model.outputs.file_id }}.pkl ${{ github.workspace }}/models/model.pkl
 
-    - name: List files in models directory
-      run: ls -l models/
-
-
     - name: Auto-commit model file
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
@@ -101,10 +106,11 @@ jobs:
     - name: Create Pull Request
       run: |
         gh pr create \
-          --title "New Model Update: ${{ needs.train-and-upload-model.outputs.file_id }}" \
-          --body "This PR includes the newly trained model. Linked Issue: #${{ needs.train-and-upload-model.outputs.issue_number }}" \
+          --title "Model Update: ${{ needs.train-and-upload-model.outputs.file_id }}" \
+          --body "This PR includes the newly trained model." \
           --base main \
           --head model-update-${{ needs.train-and-upload-model.outputs.file_id }}
+        gh issue close ${{ needs.train-and-upload-model.outputs.issue_number }}
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
 
