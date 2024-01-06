@@ -1,5 +1,16 @@
-FROM python:3.11-slim
+FROM python:3.11
+
 WORKDIR /app
-COPY api_server/api_server.py /app
-RUN pip install flask requests
-CMD ["python", "api_server.py"]
+
+COPY pyproject.toml poetry.lock* /app/
+
+RUN pip install --no-cache-dir poetry
+
+RUN poetry config virtualenvs.create false
+RUN poetry install
+
+COPY /api_server/api_server.py /app
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

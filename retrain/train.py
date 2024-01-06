@@ -5,6 +5,7 @@ from typing import List, Tuple, Dict, Optional
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import pickle
 import pathlib
+import os
 
 
 
@@ -55,15 +56,19 @@ def evaluate_predictions(y_test:pl.Series, y_pred:pl.Series)-> None:
     print("Recall:", round(recall_score(y_test, y_pred),2))
     print("F1 Score:", round(f1_score(y_test, y_pred),2))
 
-def save_trained_model(path:str, trained_model:lgb.LGBMClassifier)->None:
+def save_trained_model(
+        path:str, 
+        trained_model:lgb.LGBMClassifier,
+        id:str
+        )->None:
     
     path = pathlib.Path(path)
     path.mkdir(exist_ok=True, parents=True)
-    model_path = str(path / "model.pkl")
+    model_path = str(path / f"model-{id}.pkl")
     with open(model_path, 'wb') as file:
         pickle.dump(trained_model, file)
 
-def run(data_path:str, model_path:str):
+def run(data_path:str, model_path:str, id:str):
     data = read_data(path=data_path)
     data = process_data(data=data)
     X, y = select_features(
@@ -75,11 +80,12 @@ def run(data_path:str, model_path:str):
     trained_model = train_model(X=X_train, y=y_train)
     predictions = make_predictions(X=X_test, trained_model=trained_model)
     evaluate_predictions(y_test=y_test, y_pred=predictions)
-    save_trained_model(path=model_path, trained_model=train_model)
+    save_trained_model(path=model_path, trained_model=trained_model, id=id)
 
 
 
 if __name__ == "__main__":
+    id = os.getenv("IDENTIFIER", "default-identifier")
     data_path = "/data/datatraining.txt"
     model_path = "/models"
-    run(data_path, model_path)
+    run(data_path, model_path, id)

@@ -1,14 +1,11 @@
-from flask import Flask, request, jsonify
-import requests
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-app = Flask(__name__)
+class PredictionRequest(BaseModel):
+    data: list
 
-@app.route('/send-data', methods=['POST'])
-def send_data():
-    data = request.json
-    # Send data to the data-processor container
-    # requests.post('http://data-processor:5001/process', json=data)
-    return jsonify({"message": "Data sent to processor"})
+app = FastAPI()
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+@app.post("/predict")
+async def make_prediction(request: PredictionRequest):
+    return {"prediction": request.data}
