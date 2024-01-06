@@ -22,3 +22,7 @@ The pipeline operates as follows:
 
 ### Automation and Self-Healing
 This pipeline exemplifies an automated, self-healing approach to ML model management, efficiently addressing both data and model drift with minimal manual intervention.
+
+
+### Thoughts on data
+- Only have data for February which where it is likely that turning on a light is a good predictor for occupancy. This could be very different in the summer months which could lead to model drift.

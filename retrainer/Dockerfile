@@ -1,10 +1,14 @@
-
 FROM python:3.11
+
 WORKDIR /app
 
-COPY train_model.py .
-COPY requirements.txt .
+COPY pyproject.toml poetry.lock* /app/
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir poetry
 
-CMD ["python", "train_model.py"]
+RUN poetry config virtualenvs.create false
+RUN poetry install
+
+COPY ./retrainer/ /app
+
+CMD ["python", "train.py"]
