@@ -11,22 +11,27 @@ on:
     types: [opened, reopened]
 
 jobs:
-  check-issue-title:
-    runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.check_title.outputs.should_run }}
-    steps:
-      - id: check_title
-        name: Check Issue Title for Pattern
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [[ "${{ github.event.issue.title }}" == "Drift-Monitor:"* ]]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          else
-            echo "should_run=false" >> GITHUB_OUTPUT
-          fi
+  # check-issue-title:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     should_run: ${{ steps.check_title.outputs.should_run }}
+  #   steps:
+  #     - id: check_title
+  #       name: Check Issue Title for Pattern
+  #       run: |
+  #         if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [[ "$ISSUE_TITLE" == "Drift-Monitor:"* ]]; then
+  #           echo "should_run=true" >> $GITHUB_OUTPUT
+  #         else
+  #           echo "should_run=false" >> $GITHUB_OUTPUT
+  #         fi
+  #       env:
+  #         GITHUB_EVENT_NAME: ${{ github.event_name }}
+  #         ISSUE_TITLE: ${{ github.event.issue.title }}
+
+
 
   train-and-upload-model:
-    if: needs.check-issue-title.outputs.should_run == 'true'
+    # if: needs.check-issue-title.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     outputs:
       file_id: ${{ steps.set-outputs.outputs.file_id }}
@@ -75,7 +80,7 @@ jobs:
 
   process-model:
     needs: train-and-upload-model
-    if: needs.check-issue-title.outputs.should_run == 'true'
+    # if: needs.check-issue-title.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
