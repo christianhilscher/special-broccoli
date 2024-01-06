@@ -118,7 +118,11 @@ jobs:
           --body "This PR includes the newly trained model." \
           --base main \
           --head model-update-${{ needs.train-and-upload-model.outputs.file_id }}
-        gh issue close ${{ needs.train-and-upload-model.outputs.issue_number }}
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
 
+    - name: Close Issue
+      if: github.event_name == 'issues'
+      run: gh issue close ${{ needs.train-and-upload-model.outputs.issue_number }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
