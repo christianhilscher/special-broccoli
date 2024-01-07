@@ -9,6 +9,8 @@ RUN pip install --no-cache-dir poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install
 
-COPY /retrain/train.py /app
+COPY . /app
 
-CMD ["python", "train.py"]
+ENV PYTHONPATH /app/smart_buildings
+
+CMD ["python", "smart_buildings/retrain/train.py"]
