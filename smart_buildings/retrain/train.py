@@ -26,11 +26,12 @@ def process_data(data:pl.DataFrame)->pl.DataFrame:
     )
     return data
 
-def select_features(data:pl.DataFrame, features:List[str], target:str)->Tuple[pl.DataFrame]:
+def select_features(data:pl.DataFrame, features:List[str])->pl.DataFrame:
     X = data.select(features)
-    y = data.select(target)
-    return X, y.to_series()
+    return X
 
+def select_target(data:pl.DataFrame, target:str)->pl.Series:
+    return data.select(target).to_series()
 
 def train_model(X:pl.DataFrame, y:pl.Series, param_dict:Optional[Dict]=None)->lgb.LGBMClassifier:
     
@@ -71,11 +72,8 @@ def save_trained_model(
 def run(data_path:str, model_path:str, id:str):
     data = read_data(path=data_path)
     data = process_data(data=data)
-    X, y = select_features(
-        data=data, 
-        features=["Light"],
-        target="Occupancy"
-        )
+    X= select_features(data=data, features=["Light"])
+    y = select_target(data=data, target="Occupancy")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
     trained_model = train_model(X=X_train, y=y_train)
     predictions = make_predictions(X=X_test, trained_model=trained_model)
@@ -86,6 +84,6 @@ def run(data_path:str, model_path:str, id:str):
 
 if __name__ == "__main__":
     id = os.getenv("IDENTIFIER", "default-identifier")
-    data_path = "/data/datatraining.txt"
+    data_path = "~/Downloads/data/datatraining.txt"
     model_path = "/models"
     run(data_path, model_path, id)

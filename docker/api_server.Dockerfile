@@ -11,6 +11,8 @@ RUN poetry install
 
 COPY . /app
 
+ENV PYTHONPATH /app/smart_buildings
+
 EXPOSE 5000
 
-CMD ["python", "api_server/run.py"]
+CMD ["python", "smart_buildings/api_server/run.py"]
