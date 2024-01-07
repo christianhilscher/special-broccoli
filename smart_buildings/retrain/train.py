@@ -84,6 +84,6 @@ def run(data_path:str, model_path:str, id:str):
 
 if __name__ == "__main__":
     id = os.getenv("IDENTIFIER", "default-identifier")
-    data_path = "~/Downloads/data/datatraining.txt"
+    data_path = "/data/datatraining.txt"
     model_path = "/models"
     run(data_path, model_path, id)
