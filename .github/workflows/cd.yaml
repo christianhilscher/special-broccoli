@@ -43,6 +43,6 @@ jobs:
             docker stop $(docker ps -aq)
             docker image prune -a
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
-            docker run -d -p 80:5000 ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
+            docker run -d --restart always -p 80:5000 ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
 
 

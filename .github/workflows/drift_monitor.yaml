@@ -18,4 +18,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:${{ github.sha }}
-            docker run --rm -e GIT_TOKEN=${{ secrets.GIT_TOKEN }} ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:${{ github.sha }}
+            docker run --rm\
+             -e GIT_TOKEN=${{ secrets.GIT_TOKEN }}\
+             -e REPOSITORY_NAME=${{ github.repository }}
+             ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:${{ github.sha }}

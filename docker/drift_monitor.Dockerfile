@@ -1,7 +1,16 @@
-FROM alpine:latest
-WORKDIR /app
-RUN apk --no-cache add curl
-COPY drift_monitor/check_file.sh /app
-RUN chmod +x /app/check_file.sh
+FROM python:3.11
 
-CMD ["/app/check_file.sh"]
+WORKDIR /app
+
+COPY pyproject.toml poetry.lock* /app/
+
+RUN pip install --no-cache-dir poetry
+
+RUN poetry config virtualenvs.create false
+RUN poetry install
+
+COPY . /app
+
+ENV PYTHONPATH /app/smart_buildings
+
+CMD ["python", "smart_buildings/retrain/trigger_retraining.py.py"]
