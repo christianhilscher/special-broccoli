@@ -51,15 +51,14 @@ def trigger_retraining():
     access_token = os.getenv("GIT_TOKEN", "")
 
     # Construct the curl command
-    curl_command = (
-        f'curl -L -X POST -H "Accept: application/vnd.github.v3+json" '
-        f'-H "Authorization: Bearer {access_token}" '
-        f'-H "X-GitHub-Api-Version: 2022-11-28" '
-        f"https://api.github.com/repos/{repo_owner}/{repo_name}/issues "
-        f"-d \"{{'title':'{issue_title}','body':'{issue_body}'}}\""
-    )
+    curl_command = f"""
+        curl -L -X POST -H "Accept: application/vnd.github.v3+json"
+        -H "Authorization: Bearer {access_token}"
+        -H "X-GitHub-Api-Version: 2022-11-28"
+        https://api.github.com/repos/{repo_owner}/{repo_name}/issues
+        -d '{{"title":"{issue_title}","body":"{issue_body}"}}'
+    """
 
-    # Execute the curl command using subprocess
     try:
         subprocess.run(curl_command, shell=True, check=True)
         print("GitHub issue created successfully.")

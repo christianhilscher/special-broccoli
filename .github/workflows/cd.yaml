@@ -42,6 +42,7 @@ jobs:
           script: |
             docker stop $(docker ps -aq)
             docker image prune -a
+            docker network prune
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
             docker network create docker_network
             docker run -d --restart always \
