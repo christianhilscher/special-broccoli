@@ -21,4 +21,4 @@ jobs:
             docker run --rm\
              -e GIT_TOKEN=${{ secrets.GIT_TOKEN }}\
              -e REPOSITORY_NAME=${{ github.repository }}
-             ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
