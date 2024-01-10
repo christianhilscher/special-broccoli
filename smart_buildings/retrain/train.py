@@ -81,7 +81,7 @@ def run_training(data_path: str):
 
 if __name__ == "__main__":
     id = os.getenv("IDENTIFIER", "default-identifier")
-    config = get_config("/config/config.yaml")
+    config = get_config("/app/config/config.yaml")
 
     trained_model = run_training(config["train_data_path"])
     save_trained_model(config["model_path"], trained_model, id)
