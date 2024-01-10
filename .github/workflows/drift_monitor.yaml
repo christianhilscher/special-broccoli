@@ -19,6 +19,8 @@ jobs:
           script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
             docker run --rm \
+            --name drift-monitor \
+            --network docker_network \
             -e GIT_TOKEN=${{ secrets.GIT_TOKEN }} \
             -e REPOSITORY_NAME=${{ github.repository }} \
             -v /home/ec2-user/data:/data \

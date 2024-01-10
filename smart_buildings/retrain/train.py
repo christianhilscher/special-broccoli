@@ -3,7 +3,7 @@ import pathlib
 import pickle
 from typing import Dict, List, Optional
 
-from utils import get_config, read_data
+from retrain.utils import get_config, read_data
 
 
 import lightgbm as lgb

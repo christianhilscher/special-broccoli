@@ -5,28 +5,30 @@ import os
 
 import polars as pl
 import requests
-from train import select_target
-from utils import read_data, get_config
+from retrain.train import select_target
+from retrain.utils import read_data, get_config
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 
 def get_predictions(data: pl.DataFrame) -> List[int]:
     data_dict = {"data": data.to_dict(as_series=False)}
-    url = "http://localhost:5000/predict"
+    api_server_url = os.getenv("API_SERVER_URL", "http://api-server:5000/predict")
 
-    response = json.loads(requests.post(url, json=data_dict).text)
+    response = json.loads(requests.post(api_server_url, json=data_dict).text)
     return pl.Series(name="predictions", values=response["prediction"])
 
 
 def get_model_evaluation_metrics(
     y_test: pl.Series, y_pred: pl.Series
 ) -> Dict[str, float]:
-    return {
+    metric_dict = {
         "accuracy": accuracy_score(y_test, y_pred),
         "precision": precision_score(y_test, y_pred),
         "recall": recall_score(y_test, y_pred),
         "f1-scrore": f1_score(y_test, y_pred),
     }
+    print(metric_dict)
+    return metric_dict
 
 
 def get_data_evaluation_metrics():
