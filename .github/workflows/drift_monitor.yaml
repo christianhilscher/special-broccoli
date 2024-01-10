@@ -19,6 +19,6 @@ jobs:
           script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
             docker run --rm\
-             -e GIT_TOKEN=${{ secrets.GIT_TOKEN }}\
-             -e REPOSITORY_NAME=${{ github.repository }}\
+            -e GIT_TOKEN=${{ secrets.GIT_TOKEN }}\
+            -e REPOSITORY_NAME=${{ github.repository }}\
             ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
