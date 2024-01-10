@@ -17,5 +17,11 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:${{ github.sha }}
-            docker run --rm -e GIT_TOKEN=${{ secrets.GIT_TOKEN }} ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:${{ github.sha }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
+            docker run --rm \
+            --name drift-monitor \
+            --network docker_network \
+            -e GIT_TOKEN=${{ secrets.GIT_TOKEN }} \
+            -e REPOSITORY_NAME=${{ github.repository }} \
+            -v /home/ec2-user/data:/data \
+            ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
