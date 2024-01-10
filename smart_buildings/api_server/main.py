@@ -1,15 +1,18 @@
-from fastapi import FastAPI
-from schema import PredictionRequest
-from retrain.train import process_data, select_features, make_predictions
-import polars as pl
 import pickle
 
+import polars as pl
+from fastapi import FastAPI
+from retrain.train import make_predictions, process_data, select_features
+from schema import PredictionRequest
+
 app = FastAPI()
+
 
 def get_model():
     with open("/app/models/model.pkl", "rb") as file:
         model = pickle.load(file)
     return model
+
 
 @app.post("/predict")
 async def make_prediction(request: PredictionRequest):
@@ -20,5 +23,4 @@ async def make_prediction(request: PredictionRequest):
     trained_model = get_model()
     predictions = make_predictions(X=X, trained_model=trained_model)
     print(predictions)
-    print(type(predictions))
     return {"prediction": predictions.tolist()}

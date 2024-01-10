@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  retrain:
+    build:
+      context: .
+      dockerfile: docker/retrain.Dockerfile
+    image: christianhilscher/retrain:latest
+    volumes:
+      - /app/models:/models 
+      - /app/data:/data
+
+
