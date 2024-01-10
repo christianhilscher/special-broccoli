@@ -67,8 +67,8 @@ def trigger_retraining():
 
 
 if __name__ == "__main__":
-    config = get_config("/home/christian/special-broccoli/config/config.yaml")
-    latest_data = read_data(config["test_data_pat"])
+    config = get_config("/config/config.yaml")
+    latest_data = read_data(config["test_data_path"])
 
     predictions = get_predictions(latest_data)
     real_values = select_target(latest_data, config["target"])
