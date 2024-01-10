@@ -44,37 +44,14 @@ def compare_metrics_against_thresholds(
 
 
 def trigger_retraining():
-    repo_owner = "christianhilscher"
-    repo_name = os.getenv("REPOSITORY_NAME", "")
-    issue_title = "Drift-Monitor"
-    issue_body = "Test Body for Drift-Monitor"
-    access_token = os.getenv("GIT_TOKEN", "")
-
-    data_payload = {"title": issue_title, "body": issue_body}
-    json_payload = json.dumps(data_payload).replace("'", r"\'")  # Escape single quotes
-
-    curl_command = f"""
-        curl -L -X POST -H 'Accept: application/vnd.github.v3+json' \
-        -H 'Authorization: Bearer {access_token}' \
-        -H 'X-GitHub-Api-Version: 2022-11-28' \
-        https://api.github.com/repos/{repo_owner}/{repo_name}/issues \
-        -d '{json_payload}'
-    """
-
     try:
-        subprocess.run(curl_command, shell=True, check=True, executable="/bin/bash")
+        # Run the Bash script
+        subprocess.run(["/bin/bash", "/app/drift_monitor/raise_issue.sh"], check=True)
         print("GitHub issue created successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Failed to create GitHub issue. Return code: {e.returncode}")
         if e.output:
             print(e.output.decode())
-
-    try:
-        subprocess.run(curl_command, shell=True, check=True)
-        print("GitHub issue created successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to create GitHub issue. Return code: {e.returncode}")
-        print(e.output.decode())
 
 
 if __name__ == "__main__":
