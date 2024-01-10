@@ -50,14 +50,24 @@ def trigger_retraining():
     issue_body = "Test Body for Drift-Monitor"
     access_token = os.getenv("GIT_TOKEN", "")
 
-    # Construct the curl command
+    data_payload = {"title": issue_title, "body": issue_body}
+    json_payload = json.dumps(data_payload).replace("'", r"\'")  # Escape single quotes
+
     curl_command = f"""
-        curl -L -X POST -H "Accept: application/vnd.github.v3+json"
-        -H "Authorization: Bearer {access_token}"
-        -H "X-GitHub-Api-Version: 2022-11-28"
-        https://api.github.com/repos/{repo_owner}/{repo_name}/issues
-        -d '{{"title":"{issue_title}","body":"{issue_body}"}}'
+        curl -L -X POST -H 'Accept: application/vnd.github.v3+json' \
+        -H 'Authorization: Bearer {access_token}' \
+        -H 'X-GitHub-Api-Version: 2022-11-28' \
+        https://api.github.com/repos/{repo_owner}/{repo_name}/issues \
+        -d '{json_payload}'
     """
+
+    try:
+        subprocess.run(curl_command, shell=True, check=True, executable="/bin/bash")
+        print("GitHub issue created successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to create GitHub issue. Return code: {e.returncode}")
+        if e.output:
+            print(e.output.decode())
 
     try:
         subprocess.run(curl_command, shell=True, check=True)
