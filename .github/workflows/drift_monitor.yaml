@@ -21,4 +21,5 @@ jobs:
             docker run --rm \
             -e GIT_TOKEN=${{ secrets.GIT_TOKEN }} \
             -e REPOSITORY_NAME=${{ github.repository }} \
+            -v /home/ec2-user/data:/data \
             ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
