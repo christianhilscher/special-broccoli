@@ -42,6 +42,7 @@ jobs:
           script: |
             docker rm -vf $(docker ps -aq)
             docker rmi -f $(docker images -aq)
+            docker network rm docker_network
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
             docker network create docker_network
             docker run -d --restart always \
