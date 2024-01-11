@@ -1,15 +1,16 @@
 import os
 import pathlib
 import pickle
-from typing import Dict, List, Optional
-
+from typing import Dict, List, Optional, Tuple
 from retrain.utils import get_config, read_data
 
 
 import lightgbm as lgb
 import polars as pl
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from sklearn.model_selection import train_test_split
+from logger import setup_logger
+
+logger = setup_logger()
 
 
 def process_data(data: pl.DataFrame) -> pl.DataFrame:
@@ -21,6 +22,28 @@ def process_data(data: pl.DataFrame) -> pl.DataFrame:
         (pl.col("date").dt.date().alias("date")),
     )
     return data
+
+
+def train_test_split(
+    data: pl.DataFrame, validation_days: int
+) -> Tuple[pl.DataFrame, pl.DataFrame]:
+    data = data.with_columns(
+        (
+            pl.col("date") >= (pl.col("date").max() - pl.duration(days=validation_days))
+        ).alias("validation")
+    )
+
+    _log_split_fraction(data, validation_days)
+
+    return data.filter(~pl.col("validation")), data.filter(pl.col("validation"))
+
+
+def _log_split_fraction(data, validation_days):
+    logger.info(
+        "{} validation days yield a {:.2f} test fraction".format(
+            validation_days, data["validation"].mean()
+        )
+    )
 
 
 def select_features(data: pl.DataFrame, features: List[str]) -> pl.DataFrame:
@@ -68,20 +91,29 @@ def save_trained_model(path: str, trained_model: lgb.LGBMClassifier, id: str) ->
         pickle.dump(trained_model, file)
 
 
-def run_training(data_path: str):
+def run_training(
+    data_path: str, features: List[str], target: str, validation_days: int
+):
     data = read_data(path=data_path)
     data = process_data(data=data)
-    X = select_features(data=data, features=["Light"])
-    y = select_target(data=data, target="Occupancy")
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
-    trained_model = train_model(X=X_train, y=y_train)
-    predictions = make_predictions(X=X_test, trained_model=trained_model)
-    evaluate_predictions(y_test=y_test, y_pred=predictions)
+    train, test = train_test_split(data=data, validation_days=validation_days)
+    trained_model = train_model(
+        X=select_features(train, features), y=select_target(train, target)
+    )
+    predictions = make_predictions(
+        X=select_features(test, features), trained_model=trained_model
+    )
+    evaluate_predictions(y_test=select_target(test, target), y_pred=predictions)
 
 
 if __name__ == "__main__":
-    id = os.getenv("IDENTIFIER", "default-identifier")
+    id = os.getenv("IDENTIFIER", "")
     config = get_config("/app/config/config.yaml")
 
-    trained_model = run_training(config["train_data_path"])
+    trained_model = run_training(
+        data_path=config["train_data_path"],
+        features=config["features"],
+        target=config["target"],
+        validation_days=config["validation_days"],
+    )
     save_trained_model(config["model_path"], trained_model, id)
