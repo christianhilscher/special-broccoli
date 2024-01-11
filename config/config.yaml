@@ -2,10 +2,13 @@ train_data_path: "/data/datatraining.txt"
 test_data_path: "/data/datatest.txt"
 model_path: "/models"
 
+validation_days: 1
 features:
   - "Light"
+  - "weekday"
 
 target: "Occupancy"
+
 
 thresholds:
   accuracy: 0.95
