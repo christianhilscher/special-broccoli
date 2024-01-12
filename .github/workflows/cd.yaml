@@ -40,9 +40,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker stop $(docker ps -aq)
-            docker image prune -a
-            docker network prune
+            docker stop $(docker ps -q)
+            docker system prune -af
+            docker network prune -f
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
             docker network create docker_network
             docker run -d --restart always \

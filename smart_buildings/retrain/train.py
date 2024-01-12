@@ -74,7 +74,7 @@ def evaluate_predictions(y_test: pl.Series, y_pred: pl.Series) -> None:
     print("F1 Score:", round(f1_score(y_test, y_pred), 2))
 
 
-def save_trained_model(path: str, trained_model: lgb.LGBMClassifier, id: str) -> None:
+def save_trained_model(path: str, trained_model: lgb.LGBMClassifier) -> None:
     path = pathlib.Path(path)
     path.mkdir(exist_ok=True, parents=True)
     model_path = str(path / f"model-{ID}.pkl")
