@@ -1,16 +1,16 @@
 import os
 import pathlib
 import pickle
-from typing import Dict, List, Optional, Tuple
-from retrain.utils import get_config, read_data
-
+from typing import List, Tuple
 
 import lightgbm as lgb
 import polars as pl
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from logger import setup_logger
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from utils import get_config, read_data
 
 logger = setup_logger()
+ID = os.getenv("IDENTIFIER", "")
 
 
 def process_data(data: pl.DataFrame) -> pl.DataFrame:
@@ -24,7 +24,7 @@ def process_data(data: pl.DataFrame) -> pl.DataFrame:
     return data
 
 
-def train_test_split(
+def temporal_split(
     data: pl.DataFrame, validation_days: int
 ) -> Tuple[pl.DataFrame, pl.DataFrame]:
     data = data.with_columns(
@@ -47,8 +47,7 @@ def _log_split_fraction(data, validation_days):
 
 
 def select_features(data: pl.DataFrame, features: List[str]) -> pl.DataFrame:
-    X = data.select(features)
-    return X
+    return data.select(features)
 
 
 def select_target(data: pl.DataFrame, target: str) -> pl.Series:
@@ -56,23 +55,15 @@ def select_target(data: pl.DataFrame, target: str) -> pl.Series:
 
 
 def train_model(
-    X: pl.DataFrame, y: pl.Series, param_dict: Optional[Dict] = None
+    X: pl.DataFrame,
+    y: pl.Series,
 ) -> lgb.LGBMClassifier:
-    clf = lgb.LGBMClassifier(
-        boosting_type="gbdt",
-        objective="binary",
-        num_leaves=31,
-        learning_rate=0.05,
-        feature_fraction=0.9,
-        bagging_fraction=0.8,
-        bagging_freq=5,
-    )
-
+    clf = lgb.LGBMClassifier(boosting_type="gbdt", objective="binary")
     clf.fit(X, y)
     return clf
 
 
-def make_predictions(X, trained_model):
+def make_predictions(X: pl.DataFrame, trained_model: lgb.LGBMClassifier):
     return trained_model.predict(X)
 
 
@@ -86,7 +77,7 @@ def evaluate_predictions(y_test: pl.Series, y_pred: pl.Series) -> None:
 def save_trained_model(path: str, trained_model: lgb.LGBMClassifier, id: str) -> None:
     path = pathlib.Path(path)
     path.mkdir(exist_ok=True, parents=True)
-    model_path = str(path / f"model-{id}.pkl")
+    model_path = str(path / f"model-{ID}.pkl")
     with open(model_path, "wb") as file:
         pickle.dump(trained_model, file)
 
@@ -96,7 +87,7 @@ def run_training(
 ):
     data = read_data(path=data_path)
     data = process_data(data=data)
-    train, test = train_test_split(data=data, validation_days=validation_days)
+    train, test = temporal_split(data=data, validation_days=validation_days)
     trained_model = train_model(
         X=select_features(train, features), y=select_target(train, target)
     )
@@ -108,13 +99,12 @@ def run_training(
 
 
 if __name__ == "__main__":
-    id = os.getenv("IDENTIFIER", "")
     config = get_config("/app/config/config.yaml")
 
     trained_model = run_training(
         data_path=config["train_data_path"],
-        features=config["features"],
-        target=config["target"],
-        validation_days=config["validation_days"],
+        features=config["training"]["features"],
+        target=config["training"]["target"],
+        validation_days=config["training"]["validation_days"],
     )
-    save_trained_model(config["model_path"], trained_model, id)
+    save_trained_model(config["model_path"], trained_model)

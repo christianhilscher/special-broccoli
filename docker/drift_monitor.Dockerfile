@@ -13,4 +13,4 @@ COPY . /app
 
 ENV PYTHONPATH /app/smart_buildings
 
-CMD ["python", "smart_buildings/retrain/drift_monitor.py"]
+CMD ["python", "smart_buildings/drift_monitor/drift_monitor.py"]

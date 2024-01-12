@@ -5,8 +5,8 @@ import os
 
 import polars as pl
 import requests
-from retrain.train import select_target
-from retrain.utils import read_data, get_config
+from retrain.train import select_target, temporal_split
+from utils import read_data, get_config
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 
@@ -31,10 +31,6 @@ def get_model_evaluation_metrics(
     return metric_dict
 
 
-def get_data_evaluation_metrics():
-    pass
-
-
 def compare_metrics_against_thresholds(
     metrics: Dict[str, float], thresholds: Dict[str, float]
 ) -> bool:
@@ -45,8 +41,10 @@ def compare_metrics_against_thresholds(
 
 def trigger_retraining():
     try:
-        # Run the Bash script
-        subprocess.run(["/bin/bash", "/app/drift_monitor/raise_issue.sh"], check=True)
+        subprocess.run(
+            ["/bin/bash", "/app/smartbuildings/drift_monitor/raise_issue.sh"],
+            check=True,
+        )
         print("GitHub issue created successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Failed to create GitHub issue. Return code: {e.returncode}")
@@ -54,18 +52,54 @@ def trigger_retraining():
             print(e.output.decode())
 
 
+def check_data_drift(
+    data: pl.DataFrame,
+    evaluation_days: int,
+    evaluation_columns: str,
+    standard_deviation_threshold: float,
+) -> bool:
+    baseline_data, newest_data = temporal_split(
+        data=data, validation_days=evaluation_days
+    )
+
+    baseline_data = baseline_data.select(evaluation_columns)
+    newest_data = newest_data.select(evaluation_columns)
+
+    lower_bounds = (
+        baseline_data.mean() - baseline_data.std() * standard_deviation_threshold
+    )
+    upper_bounds = (
+        baseline_data.mean() + baseline_data.std() * standard_deviation_threshold
+    )
+
+    data_drift = (newest_data.mean() < lower_bounds).select(
+        any=pl.any_horizontal("*")
+    ).item() or (newest_data.mean() > upper_bounds).select(
+        any=pl.any_horizontal("*")
+    ).item()
+    return data_drift
+
+
 if __name__ == "__main__":
     config = get_config("/app/config/config.yaml")
     latest_data = read_data(config["test_data_path"])
 
     predictions = get_predictions(latest_data)
-    real_values = select_target(latest_data, config["target"])
+    real_values = select_target(latest_data, config["training"]["target"])
 
     model_evaluation_metrics = get_model_evaluation_metrics(real_values, predictions)
     model_drift = compare_metrics_against_thresholds(
-        metrics=model_evaluation_metrics, thresholds=config["thresholds"]
+        metrics=model_evaluation_metrics,
+        thresholds=config["drift_monitor"]["prediction_thresholds"],
     )
-    model_drift = True
+    data_drift = check_data_drift(
+        data=latest_data,
+        evaluation_days=config["drift_monitor"]["evaluation_days"],
+        evaluation_columns=config["drift_monitor"]["evaluation_columns"],
+        standard_deviation_threshold=config["drift_monitor"][
+            "standard_deviation_threshold"
+        ],
+    )
 
-    if model_drift:
+    if model_drift or data_drift:
         trigger_retraining()
