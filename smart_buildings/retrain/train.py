@@ -104,6 +104,7 @@ def run_training(
         X=select_features(test, features), trained_model=trained_model
     )
     evaluate_predictions(y_test=select_target(test, target), y_pred=predictions)
+    return trained_model
 
 
 if __name__ == "__main__":
