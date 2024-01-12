@@ -2,16 +2,24 @@ train_data_path: "/data/datatraining.txt"
 test_data_path: "/data/datatest.txt"
 model_path: "/models"
 
-validation_days: 1
-features:
-  - "Light"
-  - "weekday"
 
-target: "Occupancy"
+training:
+  validation_days: 1
+  features:
+    - "Light"
+    - "weekday"
+  target: "Occupancy"
 
 
-thresholds:
-  accuracy: 0.95
-  precision: 0.9
-  recall: 0.9
-  f1-score: 0.8
+drift_monitor:
+  evaluation_days: 1
+  standard_deviation_threshold: 0.5
+  evaluation_columns:
+    - "Occupancy"
+    - "Temperature"
+    - "Light"
+  prediction_thresholds:
+    accuracy: 0.95
+    precision: 0.9
+    recall: 0.9
+    f1-score: 0.8
