@@ -20,9 +20,9 @@ The pipeline operates as follows:
 
 5. **Branch Creation and PR**: Post successful retraining, a new branch is created, the updated model is committed, and a pull request (PR) is raised for review.
 
-6. **Model Evaluation and Merge**: A test in the PR is the comparison of the new model's performance against the current production model. If the new model shows improvement, the PR is merged into the master branch.
+6. **Model Evaluation and Merge**: A test in the PR is the comparison of the new model's performance against the current production model. If the new model shows improvement, the PR is merged into the main branch.
 
-7. **Deployment**: The merge into master initiates a deployment action. This action involves building a new Docker container with the updated model, stopping the previous container, and launching the new container to resume prediction services.
+7. **Deployment**: The merge into main initiates a deployment action. This action involves building a new Docker container with the updated model, stopping the previous container, and launching the new container to resume prediction services.
 
 ### Automation and Self-Healing
 

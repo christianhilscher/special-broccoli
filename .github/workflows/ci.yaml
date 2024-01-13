@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker:
+  build_docker_images:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -35,3 +35,13 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
+
+  run_linting_and_tests:
+    needs: build_docker_images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Linting
+        run: echo "Linting should happen here"
+
+      - name: Run Tests
+        run: echo "Tests should be executed here"

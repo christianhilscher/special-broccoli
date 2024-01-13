@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from utils import get_config, read_data
 
 logger = setup_logger()
-ID = os.getenv("IDENTIFIER", "")
+ID = os.getenv("IDENTIFIER")
 
 
 def process_data(data: pl.DataFrame) -> pl.DataFrame:
@@ -90,7 +90,7 @@ def save_trained_model(path: str, trained_model: lgb.LGBMClassifier) -> None:
 
 def run_training(
     data_path: str, features: List[str], target: str, validation_days: int
-):
+) -> lgb.LGBMClassifier:
     data = read_data(path=data_path)
     data = process_data(data=data)
     train, test = temporal_split(data=data, validation_days=validation_days)

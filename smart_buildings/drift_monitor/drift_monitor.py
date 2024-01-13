@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import subprocess
 import os
 
@@ -58,13 +58,26 @@ def check_data_drift(
     evaluation_columns: str,
     standard_deviation_threshold: float,
 ) -> bool:
-    baseline_data, newest_data = temporal_split(
-        data=data, validation_days=evaluation_days
-    )
+    baseline_data, new_data = temporal_split(data=data, validation_days=evaluation_days)
 
     baseline_data = baseline_data.select(evaluation_columns)
-    newest_data = newest_data.select(evaluation_columns)
+    new_data = new_data.select(evaluation_columns)
 
+    lower_bounds, upper_bounds = _get_bounds(
+        standard_deviation_threshold, baseline_data
+    )
+
+    data_drift = (new_data.mean() < lower_bounds).select(
+        any=pl.any_horizontal("*")
+    ).item() or (new_data.mean() > upper_bounds).select(
+        any=pl.any_horizontal("*")
+    ).item()
+    return data_drift
+
+
+def _get_bounds(
+    standard_deviation_threshold: float, baseline_data: pl.DataFrame
+) -> Tuple[pl.DataFrame]:
     lower_bounds = (
         baseline_data.mean() - baseline_data.std() * standard_deviation_threshold
     )
@@ -72,29 +85,34 @@ def check_data_drift(
         baseline_data.mean() + baseline_data.std() * standard_deviation_threshold
     )
 
-    data_drift = (newest_data.mean() < lower_bounds).select(
-        any=pl.any_horizontal("*")
-    ).item() or (newest_data.mean() > upper_bounds).select(
-        any=pl.any_horizontal("*")
-    ).item()
-    return data_drift
+    return lower_bounds, upper_bounds
 
 
-if __name__ == "__main__":
-    config = get_config("/app/config/config.yaml")
-    latest_data = read_data(config["test_data_path"])
-
-    predictions = get_predictions(latest_data)
-    real_values = select_target(latest_data, config["training"]["target"])
+def check_for_model_drift(data: pl.DataFrame, config: Dict[str, str]) -> bool:
+    predictions = get_predictions(data)
+    real_values = select_target(data, config["training"]["target"])
 
     model_evaluation_metrics = get_model_evaluation_metrics(real_values, predictions)
     model_drift = compare_metrics_against_thresholds(
         metrics=model_evaluation_metrics,
         thresholds=config["drift_monitor"]["prediction_thresholds"],
     )
-    data = process_data(data=latest_data)
+
+    return model_drift
+
+
+if __name__ == "__main__":
+    config = get_config("/app/config/config.yaml")
+    data = read_data(config["test_data_path"])
+    processed_data = process_data(data)
+
+    model_drift = check_for_model_drift(
+        data,
+        config,
+    )
+
     data_drift = check_data_drift(
-        data=data,
+        data=processed_data,
         evaluation_days=config["drift_monitor"]["evaluation_days"],
         evaluation_columns=config["drift_monitor"]["evaluation_columns"],
         standard_deviation_threshold=config["drift_monitor"][
