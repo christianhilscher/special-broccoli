@@ -1,16 +1,21 @@
-name: Deployment Workflow
+name: Deployment
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  deploy:
+  build_docker_images:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [api_server, drift_monitor, retrain]
+
     steps:
-      - name: Checkout code
+
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -26,14 +31,20 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/api_server.Dockerfile
+          file: ./docker/${{ matrix.image }}.Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/api_server:cache
-          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/api_server:cache
-      
-      - name: Deploy
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
+  
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_docker_images
+    steps:
+      - name: Stop and delete all running services
+        id: delete-services
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -43,6 +54,14 @@ jobs:
             docker stop $(docker ps -q)
             docker system prune -af
             docker network prune -f
+
+      - name: Start API Server with new model
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
             docker network create docker_network
             docker run -d --restart always \
@@ -50,5 +69,4 @@ jobs:
             --name api-server \
             -p 80:5000 \
             ${{ secrets.DOCKERHUB_USERNAME }}/api_server:${{ github.sha }}
-
 

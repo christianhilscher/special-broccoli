@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+
 
 class SensorData(BaseModel):
     date: List[str]
@@ -8,7 +9,8 @@ class SensorData(BaseModel):
     Light: List[float]
     CO2: List[float]
     HumidityRatio: List[float]
-    Occupancy: List[int]
+    Occupancy: Optional[List[int]]
+
 
 class PredictionRequest(BaseModel):
     data: SensorData

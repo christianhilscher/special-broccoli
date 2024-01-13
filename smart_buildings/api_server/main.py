@@ -1,5 +1,7 @@
 import pickle
+from typing import Dict, List
 
+import lightgbm as lgb
 import polars as pl
 import yaml
 from fastapi import FastAPI
@@ -9,26 +11,32 @@ from schema import PredictionRequest
 app = FastAPI()
 
 
-def get_model():
-    with open("/app/models/model.pkl", "rb") as file:
+def get_model(path: str) -> lgb.LGBMClassifier:
+    with open(path, "rb") as file:
         model = pickle.load(file)
     return model
 
 
-def get_config():
-    with open("/app/config/config.yaml", "r") as file:
+def get_config(path: str) -> Dict[str, str]:
+    with open(path, "r") as file:
         config = yaml.safe_load(file)
     return config
 
 
+def prepare_data(data: dict, features: List[str]) -> pl.DataFrame:
+    data = pl.DataFrame._from_dict(data)
+    data = process_data(data=data)
+    return select_features(data=data, features=features)
+
+
 @app.post("/predict")
 async def make_prediction(request: PredictionRequest):
-    print("Received request data:", request.data)
-    config = get_config()
-    data = pl.DataFrame._from_dict(request.data.model_dump())
-    data = process_data(data=data)
-    X = select_features(data=data, features=config["training"]["features"])
-    trained_model = get_model()
-    predictions = make_predictions(X=X, trained_model=trained_model)
-    print(predictions)
+    config = get_config(path="/app/config/config.yaml")
+    data = prepare_data(
+        data=request.data.model_dump(), features=config["training"]["features"]
+    )
+
+    trained_model = get_model(path="/app/models/model.pkl")
+    predictions = make_predictions(X=data, trained_model=trained_model)
+
     return {"prediction": predictions.tolist()}
