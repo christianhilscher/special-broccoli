@@ -3,6 +3,7 @@ import pathlib
 import pickle
 from typing import List, Tuple
 
+import numpy as np
 import lightgbm as lgb
 import polars as pl
 from logger import setup_logger
@@ -59,8 +60,7 @@ def train_model(X: pl.DataFrame, y: pl.Series) -> lgb.LGBMClassifier:
         boosting_type="gbdt",
         objective="binary",
         num_leaves=31,
-        learning_rate=0.05,
-        feature_fraction=0.9,
+        max_depth=np.random.randint(5, 15),
         bagging_fraction=0.8,
         bagging_freq=5,
     )
