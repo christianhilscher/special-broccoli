@@ -5,7 +5,7 @@ import os
 
 import polars as pl
 import requests
-from retrain.train import select_target, temporal_split
+from retrain.train import temporal_split, process_data, select_target
 from utils import read_data, get_config
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
@@ -92,8 +92,9 @@ if __name__ == "__main__":
         metrics=model_evaluation_metrics,
         thresholds=config["drift_monitor"]["prediction_thresholds"],
     )
+    data = process_data(data=latest_data)
     data_drift = check_data_drift(
-        data=latest_data,
+        data=data,
         evaluation_days=config["drift_monitor"]["evaluation_days"],
         evaluation_columns=config["drift_monitor"]["evaluation_columns"],
         standard_deviation_threshold=config["drift_monitor"][
