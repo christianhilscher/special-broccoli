@@ -42,7 +42,7 @@ def compare_metrics_against_thresholds(
 def trigger_retraining():
     try:
         subprocess.run(
-            ["/bin/bash", "/app/smartbuildings/drift_monitor/raise_issue.sh"],
+            ["/bin/bash", "/app/smart_buildings/drift_monitor/raise_issue.sh"],
             check=True,
         )
         print("GitHub issue created successfully.")
