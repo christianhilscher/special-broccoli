@@ -31,11 +31,11 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/retrain:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/retrain:${{ github.sha }}
           docker run -e IDENTIFIER=${{ env.file_id }} \
             -v /home/ec2-user/models:/models \
             -v /home/ec2-user/data:/data \
-            ${{ secrets.DOCKERHUB_USERNAME }}/retrain:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/retrain:${{ github.sha }}
 
     - name: Install SSH
       run: sudo apt-get update && sudo apt-get install -y ssh
