@@ -54,11 +54,17 @@ def select_target(data: pl.DataFrame, target: str) -> pl.Series:
     return data.select(target).to_series()
 
 
-def train_model(
-    X: pl.DataFrame,
-    y: pl.Series,
-) -> lgb.LGBMClassifier:
-    clf = lgb.LGBMClassifier(boosting_type="gbdt", objective="binary")
+def train_model(X: pl.DataFrame, y: pl.Series) -> lgb.LGBMClassifier:
+    clf = lgb.LGBMClassifier(
+        boosting_type="gbdt",
+        objective="binary",
+        num_leaves=31,
+        learning_rate=0.05,
+        feature_fraction=0.9,
+        bagging_fraction=0.8,
+        bagging_freq=5,
+    )
+
     clf.fit(X, y)
     return clf
 
