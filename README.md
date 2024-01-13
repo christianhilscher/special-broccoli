@@ -24,6 +24,11 @@ The pipeline operates as follows:
 
 7. **Deployment**: The merge into main initiates a deployment action. This action involves building a new Docker container with the updated model, stopping the previous container, and launching the new container to resume prediction services.
 
+
+![workflow](https://github.com/christianhilscher/special-broccoli/assets/42186988/126f4cc6-6cdc-4c95-8532-8150cb48eb4e) 
+
+
+
 ### Automation and Self-Healing
 
 This pipeline exemplifies an automated, self-healing approach to ML model management, efficiently addressing both data and model drift with minimal manual intervention.
