@@ -8,23 +8,24 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  automate-pr-tasks:
+  end_to_end_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: End-to-End Tests
+        run: echo "End-to-End Tests should happen here"
+
+  merge_into_main:
+    needs: end_to_end_test
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Dummy Tests
-        run: |
-          # Add your test commands here
-          echo "Running tests..."
-          # Example: ./run-tests.sh
-
-      - name: Merge PR into Master
+      - name: Merge PR into main branch
         if: 
           contains(github.event.pull_request.title, 'Model Update')
         run: |
-          gh pr merge ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --admin --rebase
+          gh pr merge ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --admin --rebase --delete-branch
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}

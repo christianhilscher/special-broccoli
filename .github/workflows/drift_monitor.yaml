@@ -4,13 +4,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  check-file:
+  run_drift_monitor:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Run File Check Container on EC2
+      - name: Pull Docker Image onto EC2 instance
+        id: docker-pull
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -18,6 +19,14 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/drift_monitor:latest
+
+      - name: Run Drift-Monitor
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
             docker run --rm \
             --name drift-monitor \
             --network docker_network \

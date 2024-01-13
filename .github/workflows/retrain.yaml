@@ -2,35 +2,11 @@ name: Model Retraining
 
 on:
   workflow_dispatch:
-    inputs:
-      issue_number:
-        description: 'Issue Number (optional)'
-        required: false
-        default: "999"
   issues:
     types: [opened, reopened]
 
 jobs:
-  # check-issue-title:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     should_run: ${{ steps.check_title.outputs.should_run }}
-  #   steps:
-  #     - id: check_title
-  #       name: Check Issue Title for Pattern
-  #       run: |
-  #         if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [[ "$ISSUE_TITLE" == "Drift-Monitor:"* ]]; then
-  #           echo "should_run=true" >> $GITHUB_OUTPUT
-  #         else
-  #           echo "should_run=false" >> $GITHUB_OUTPUT
-  #         fi
-  #       env:
-  #         GITHUB_EVENT_NAME: ${{ github.event_name }}
-  #         ISSUE_TITLE: ${{ github.event.issue.title }}
-
-
-
-  train-and-upload-model:
+  train_and_upload_model:
     if: contains(github.event.issue.title, 'Drift-Monitor')
     runs-on: ubuntu-latest
     outputs:
@@ -81,8 +57,8 @@ jobs:
         path: ${{ github.workspace }}
 
 
-  create-pr:
-    needs: train-and-upload-model
+  create_pr:
+    needs: train_and_upload_model
     if: contains(github.event.issue.title, 'Drift-Monitor')
     runs-on: ubuntu-latest
     steps:
@@ -98,31 +74,31 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: ${{ github.workspace }}/artifacts/
-        name: model-${{ needs.train-and-upload-model.outputs.file_id }}
+        name: model-${{ needs.train_and_upload_model.outputs.file_id }}
 
     - name: Move and Rename Model File
-      run: mv ${{ github.workspace }}/artifacts/model-${{ needs.train-and-upload-model.outputs.file_id }}.pkl ${{ github.workspace }}/models/model.pkl
+      run: mv ${{ github.workspace }}/artifacts/model-${{ needs.train_and_upload_model.outputs.file_id }}.pkl ${{ github.workspace }}/models/model.pkl
 
     - name: Auto-commit model file
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: Add new model based on date ${{ needs.train-and-upload-model.outputs.file_id }}
-        branch: model-update-${{ needs.train-and-upload-model.outputs.file_id }}
+        commit_message: Add new model based on date ${{ needs.train_and_upload_model.outputs.file_id }}
+        branch: model-update-${{ needs.train_and_upload_model.outputs.file_id }}
         file_pattern: models/model.pkl
         create_branch: true
 
     - name: Create Pull Request
       run: |
         gh pr create \
-          --title "Model Update: ${{ needs.train-and-upload-model.outputs.file_id }}" \
+          --title "Model Update: ${{ needs.train_and_upload_model.outputs.file_id }}" \
           --body "This PR includes the newly trained model." \
           --base main \
-          --head model-update-${{ needs.train-and-upload-model.outputs.file_id }}
+          --head model-update-${{ needs.train_and_upload_model.outputs.file_id }}
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
 
     - name: Close Issue
       if: github.event_name == 'issues'
-      run: gh issue close ${{ needs.train-and-upload-model.outputs.issue_number }}
+      run: gh issue close ${{ needs.train_and_upload_model.outputs.issue_number }}
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
