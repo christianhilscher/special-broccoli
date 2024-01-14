@@ -5,8 +5,12 @@ import lightgbm as lgb
 import polars as pl
 import yaml
 from fastapi import FastAPI
-from retrain.train import make_predictions, process_data, select_features
-from schema import PredictionRequest
+from smart_buildings.retrain.train import (
+    make_predictions,
+    process_data,
+    select_features,
+)
+from smart_buildings.api_server.schema import PredictionRequest
 
 app = FastAPI()
 

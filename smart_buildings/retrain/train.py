@@ -6,9 +6,9 @@ from typing import List, Tuple
 import numpy as np
 import lightgbm as lgb
 import polars as pl
-from logger import setup_logger
+from smart_buildings.logger import setup_logger
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from utils import get_config, read_data
+from smart_buildings.utils import get_config, read_data
 
 logger = setup_logger()
 ID = os.getenv("IDENTIFIER")
@@ -74,10 +74,10 @@ def make_predictions(X: pl.DataFrame, trained_model: lgb.LGBMClassifier):
 
 
 def evaluate_predictions(y_test: pl.Series, y_pred: pl.Series) -> None:
-    print("Accuracy:", round(accuracy_score(y_test, y_pred), 2))
-    print("Precision:", round(precision_score(y_test, y_pred), 2))
-    print("Recall:", round(recall_score(y_test, y_pred), 2))
-    print("F1 Score:", round(f1_score(y_test, y_pred), 2))
+    logger.info("Accuracy:", round(accuracy_score(y_test, y_pred), 2))
+    logger.info("Precision:", round(precision_score(y_test, y_pred), 2))
+    logger.info("Recall:", round(recall_score(y_test, y_pred), 2))
+    logger.info("F1 Score:", round(f1_score(y_test, y_pred), 2))
 
 
 def save_trained_model(path: str, trained_model: lgb.LGBMClassifier) -> None:
@@ -89,28 +89,38 @@ def save_trained_model(path: str, trained_model: lgb.LGBMClassifier) -> None:
 
 
 def run_training(
-    data_path: str, features: List[str], target: str, validation_days: int
+    train_data: pl.DataFrame,
+    test_data: pl.DataFrame,
+    features: List[str],
+    target: str,
 ) -> lgb.LGBMClassifier:
-    data = read_data(path=data_path)
-    data = process_data(data=data)
-    train, test = temporal_split(data=data, validation_days=validation_days)
     trained_model = train_model(
-        X=select_features(train, features), y=select_target(train, target)
+        X=select_features(train_data, features), y=select_target(train_data, target)
     )
     predictions = make_predictions(
-        X=select_features(test, features), trained_model=trained_model
+        X=select_features(test_data, features), trained_model=trained_model
     )
-    evaluate_predictions(y_test=select_target(test, target), y_pred=predictions)
+    evaluate_predictions(y_test=select_target(test_data, target), y_pred=predictions)
     return trained_model
+
+
+def fetch_data(data_path: str) -> pl.DataFrame:
+    data = read_data(path=data_path)
+    data = process_data(data=data)
+    return data
 
 
 if __name__ == "__main__":
     config = get_config("/app/config/config.yaml")
 
+    train_data = fetch_data(data_path=config["train_data_path"])
+    test_data = fetch_data(data_path=config["test_data_path"])
+
     trained_model = run_training(
-        data_path=config["train_data_path"],
+        train_data=train_data,
+        test_data=test_data,
         features=config["training"]["features"],
         target=config["training"]["target"],
-        validation_days=config["training"]["validation_days"],
     )
+
     save_trained_model(config["model_path"], trained_model)
