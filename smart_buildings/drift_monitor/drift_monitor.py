@@ -5,9 +5,12 @@ import os
 
 import polars as pl
 import requests
-from retrain.train import temporal_split, process_data, select_target
-from utils import read_data, get_config
+from smart_buildings.retrain.train import temporal_split, process_data, select_target
+from smart_buildings.utils import read_data, get_config
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from smart_buildings.logger import setup_logger
+
+logger = setup_logger()
 
 
 def get_predictions(data: pl.DataFrame) -> List[int]:
@@ -27,7 +30,7 @@ def get_model_evaluation_metrics(
         "recall": recall_score(y_test, y_pred),
         "f1-scrore": f1_score(y_test, y_pred),
     }
-    print(metric_dict)
+    logger.info(metric_dict)
     return metric_dict
 
 
@@ -45,11 +48,11 @@ def trigger_retraining():
             ["/bin/bash", "/app/smart_buildings/drift_monitor/raise_issue.sh"],
             check=True,
         )
-        print("GitHub issue created successfully.")
+        logger.info("GitHub issue created successfully.")
     except subprocess.CalledProcessError as e:
-        print(f"Failed to create GitHub issue. Return code: {e.returncode}")
+        logger.error(f"Failed to create GitHub issue. Return code: {e.returncode}")
         if e.output:
-            print(e.output.decode())
+            logger.error(e.output.decode())
 
 
 def check_data_drift(
@@ -88,14 +91,16 @@ def _get_bounds(
     return lower_bounds, upper_bounds
 
 
-def check_for_model_drift(data: pl.DataFrame, config: Dict[str, str]) -> bool:
+def check_for_model_drift(
+    data: pl.DataFrame, target: str, threshold_dict: Dict[str, float]
+) -> bool:
     predictions = get_predictions(data)
-    real_values = select_target(data, config["training"]["target"])
+    real_values = select_target(data, target)
 
     model_evaluation_metrics = get_model_evaluation_metrics(real_values, predictions)
     model_drift = compare_metrics_against_thresholds(
         metrics=model_evaluation_metrics,
-        thresholds=config["drift_monitor"]["prediction_thresholds"],
+        thresholds=threshold_dict,
     )
 
     return model_drift
@@ -103,12 +108,13 @@ def check_for_model_drift(data: pl.DataFrame, config: Dict[str, str]) -> bool:
 
 if __name__ == "__main__":
     config = get_config("/app/config/config.yaml")
-    data = read_data(config["test_data_path"])
+    data = read_data(config["evaluation_data_path"])
     processed_data = process_data(data)
 
     model_drift = check_for_model_drift(
-        data,
-        config,
+        data=data,
+        target=config["training"]["target"],
+        threshold_dict=config["drift_monitor"]["prediction_thresholds"],
     )
 
     data_drift = check_data_drift(
