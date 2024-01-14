@@ -10,7 +10,6 @@ RUN poetry config virtualenvs.create false
 RUN poetry install
 
 COPY . /app
-
 ENV PYTHONPATH /app
 
 EXPOSE 5000
