@@ -27,7 +27,8 @@ The pipeline operates as follows:
 
 ![workflow](https://github.com/christianhilscher/special-broccoli/assets/42186988/126f4cc6-6cdc-4c95-8532-8150cb48eb4e) 
 
-
+- [Operational Slides](slides-operational.html)
+- [Smart Buildings Slides](slides-smart-buildings.html)
 
 ### Automation and Self-Healing
 
