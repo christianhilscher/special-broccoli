@@ -52,6 +52,3 @@ This pipeline exemplifies an automated, self-healing approach to ML model manage
   - also include metric of actual energy savings:
     - look at counterfactual if nothing happened
     - provide rough estimate of savings
-
-
-### Thoughts on Setup
