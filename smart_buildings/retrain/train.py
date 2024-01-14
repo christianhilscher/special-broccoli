@@ -60,8 +60,7 @@ def train_model(X: pl.DataFrame, y: pl.Series) -> lgb.LGBMClassifier:
         boosting_type="gbdt",
         objective="binary",
         max_depth=np.random.randint(3, 9),
-        bagging_fraction=0.8,
-        bagging_freq=5,
+        bagging_fraction=0.7,
     )
 
     clf.fit(X, y)
