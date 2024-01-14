@@ -25,10 +25,10 @@ def get_model_evaluation_metrics(
     y_test: pl.Series, y_pred: pl.Series
 ) -> Dict[str, float]:
     metric_dict = {
-        "accuracy": accuracy_score(y_test, y_pred),
-        "precision": precision_score(y_test, y_pred),
-        "recall": recall_score(y_test, y_pred),
-        "f1-scrore": f1_score(y_test, y_pred),
+        "accuracy: %s": accuracy_score(y_test, y_pred),
+        "precision: %s": precision_score(y_test, y_pred),
+        "recall: %s": recall_score(y_test, y_pred),
+        "f1-scrore: %s": f1_score(y_test, y_pred),
     }
     logger.info(metric_dict)
     return metric_dict
