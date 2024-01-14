@@ -59,8 +59,7 @@ def train_model(X: pl.DataFrame, y: pl.Series) -> lgb.LGBMClassifier:
     clf = lgb.LGBMClassifier(
         boosting_type="gbdt",
         objective="binary",
-        num_leaves=31,
-        max_depth=np.random.randint(5, 15),
+        max_depth=np.random.randint(3, 9),
         bagging_fraction=0.8,
         bagging_freq=5,
     )
@@ -74,10 +73,26 @@ def make_predictions(X: pl.DataFrame, trained_model: lgb.LGBMClassifier):
 
 
 def evaluate_predictions(y_test: pl.Series, y_pred: pl.Series) -> None:
-    logger.info("Accuracy:", round(accuracy_score(y_test, y_pred), 2))
-    logger.info("Precision:", round(precision_score(y_test, y_pred), 2))
-    logger.info("Recall:", round(recall_score(y_test, y_pred), 2))
-    logger.info("F1 Score:", round(f1_score(y_test, y_pred), 2))
+    logger.info(
+        "Accuracy: %s",
+        round(accuracy_score(y_test, y_pred), 2),
+        extra={"accuracy": round(accuracy_score(y_test, y_pred), 2)},
+    )
+    logger.info(
+        "Precision: %s",
+        round(precision_score(y_test, y_pred), 2),
+        extra={"precision": round(precision_score(y_test, y_pred), 2)},
+    )
+    logger.info(
+        "Recall: %s",
+        round(recall_score(y_test, y_pred), 2),
+        extra={"recall": round(recall_score(y_test, y_pred), 2)},
+    )
+    logger.info(
+        "F1-Score: %s",
+        round(f1_score(y_test, y_pred), 2),
+        extra={"f1-score": round(f1_score(y_test, y_pred), 2)},
+    )
 
 
 def save_trained_model(path: str, trained_model: lgb.LGBMClassifier) -> None:
