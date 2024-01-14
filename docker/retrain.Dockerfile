@@ -11,6 +11,6 @@ RUN poetry install
 
 COPY . /app
 
-ENV PYTHONPATH /app/smart_buildings
+ENV PYTHONPATH /app
 
 CMD ["python", "smart_buildings/retrain/train.py"]

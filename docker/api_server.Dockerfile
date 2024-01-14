@@ -11,7 +11,7 @@ RUN poetry install
 
 COPY . /app
 
-ENV PYTHONPATH /app/smart_buildings
+ENV PYTHONPATH /app
 
 EXPOSE 5000
 
