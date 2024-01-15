@@ -6,7 +6,7 @@ on:
 
 jobs:
   build_docker_images:
-    if: '!contains(github.head_ref, "model-update-")'
+    if: !contains(github.head_ref, 'model-update-')
     runs-on: ubuntu-latest
     strategy:
       matrix:
