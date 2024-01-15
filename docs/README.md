@@ -28,7 +28,6 @@ The pipeline operates as follows:
 ![workflow](https://github.com/christianhilscher/special-broccoli/assets/42186988/126f4cc6-6cdc-4c95-8532-8150cb48eb4e) 
 
 
-
 ### Automation and Self-Healing
 
 This pipeline exemplifies an automated, self-healing approach to ML model management, efficiently addressing both data and model drift with minimal manual intervention.
