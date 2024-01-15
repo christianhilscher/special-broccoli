@@ -6,7 +6,6 @@ on:
 
 jobs:
   build_docker_images:
-    if: !contains(github.head_ref, 'model-update-')
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -34,7 +33,6 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:cache
 
